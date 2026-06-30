@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tracker Docházky</title>
+    <style>
+        /* Zde je CSS - určuje, jak aplikace vypadá */
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 400px; /* Šířka pro mobilní telefon */
+            margin: 20px auto;
+            padding: 15px;
+            text-align: center;
+            background-color: #f9f9f9;
+        }
+        button {
+            padding: 15px 30px;
+            font-size: 16px;
+            margin: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 80%;
+            font-weight: bold;
+        }
+        .btn-in { 
+            background-color: #4CAF50; /* Zelená */
+            color: white; 
+        }
+        .btn-out { 
+            background-color: #f44336; /* Červená */
+            color: white; 
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: white;
+        }
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Moje Docházka</h1>
+    
+    <div>
+        <button class="btn-in">Zapsat příchod</button>
+        <button class="btn-out">Zapsat odchod</button>
+    </div>
+
+    <hr style="margin: 30px 0;">
+
+    <h3>Historie (Test)</h3>
+    <table>
+        <tr>
+            <th>Datum</th>
+            <th>Příchod</th>
+            <th>Odchod</th>
+        </tr>
+        <tr>
+            <td>30. 6. 2026</td>
+            <td>08:00</td>
+            <td>--:--</td>
+        </tr>
+    </table>
+
+</body>
+</html>
