@@ -69,5 +69,36 @@
         </tr>
     </table>
 
+    <p id="status-message" style="font-weight: bold; margin-top: 20px; font-size: 18px;"></p>
+
+    <script>
+        // 1. Najdeme naše prvky na stránce (tlačítka a textový odstavec)
+        const btnIn = document.querySelector('.btn-in');
+        const btnOut = document.querySelector('.btn-out');
+        const statusMessage = document.getElementById('status-message');
+
+        // 2. Funkce pro získání aktuálního času (např. 08:15)
+        function getCurrentTime() {
+            const now = new Date(); // Zjistí přesný aktuální čas v zařízení
+            const hours = String(now.getHours()).padStart(2, '0'); // Zajistí, že 8 hodin bude "08"
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            return hours + ':' + minutes;
+        }
+
+        // 3. Co se stane, když klikneme na zelené tlačítko (Příchod)
+        btnIn.addEventListener('click', function() {
+            const time = getCurrentTime();
+            statusMessage.innerText = 'Příchod zaznamenán v: ' + time;
+            statusMessage.style.color = 'green';
+        });
+
+        // 4. Co se stane, když klikneme na červené tlačítko (Odchod)
+        btnOut.addEventListener('click', function() {
+            const time = getCurrentTime();
+            statusMessage.innerText = 'Odchod zaznamenán v: ' + time;
+            statusMessage.style.color = 'red';
+        });
+    </script>
+
 </body>
 </html>
