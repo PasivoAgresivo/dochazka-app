@@ -1,1 +1,50 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moje Docházka</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; background-color: #f4f4f9; }
+        .btn { padding: 15px 30px; font-size: 20px; color: white; border: none; border-radius: 8px; cursor: pointer; margin: 10px; width: 200px; }
+        .btn-in { background-color: #4CAF50; }
+        .btn-in:hover { background-color: #45a049; }
+        .btn-out { background-color: #f44336; }
+        .btn-out:hover { background-color: #da190b; }
+    </style>
+</head>
+<body>
 
+    <h1>Evidence Docházky</h1>
+
+    <button class="btn btn-in">Zapsat příchod</button>
+    <button class="btn btn-out">Zapsat odchod</button>
+
+    <p id="status-message" style="font-weight: bold; margin-top: 20px; font-size: 18px;"></p>
+
+    <script>
+        const btnIn = document.querySelector('.btn-in');
+        const btnOut = document.querySelector('.btn-out');
+        const statusMessage = document.getElementById('status-message');
+
+        function getCurrentTime() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            return hours + ':' + minutes;
+        }
+
+        btnIn.addEventListener('click', function() {
+            const time = getCurrentTime();
+            statusMessage.innerText = 'Příchod zaznamenán v: ' + time;
+            statusMessage.style.color = 'green';
+        });
+
+        btnOut.addEventListener('click', function() {
+            const time = getCurrentTime();
+            statusMessage.innerText = 'Odchod zaznamenán v: ' + time;
+            statusMessage.style.color = 'red';
+        });
+    </script>
+</body>
+</html>
