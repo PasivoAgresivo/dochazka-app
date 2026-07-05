@@ -72,33 +72,64 @@
     <p id="status-message" style="font-weight: bold; margin-top: 20px; font-size: 18px;"></p>
 
     <script>
-        // 1. Najdeme naše prvky na stránce (tlačítka a textový odstavec)
+        
+        <!-- Zde se bude zobrazovat zpráva o kliknutí -->
+    <p id="status-message" style="font-weight: bold; margin-top: 20px; font-size: 18px;"></p>
+
+    <!-- 1. Nahrajeme oficiální knihovnu Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- 2. Náš upravený JavaScript (logika aplikace) -->
+    <script>
+
+        // SEM VLOŽ SVOJE ÚDAJE (adresu bez /rest/v1/ a dlouhý klíč)
+        const supabaseUrl = https://bnnblydnabmmekhuomem.supabase.co/rest/v1/;
+        const supabaseKey = sb_publishable_NRw5GoAEJphwZLSSMTtmWA_xb2ly6FK;
+        
+        // Vytvoření připojení k databázi
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
         const btnIn = document.querySelector('.btn-in');
-        const btnOut = document.querySelector('.btn-out');
         const statusMessage = document.getElementById('status-message');
 
-        // 2. Funkce pro získání aktuálního času (např. 08:15)
+        // Funkce pro získání času (např. 08:15)
         function getCurrentTime() {
-            const now = new Date(); // Zjistí přesný aktuální čas v zařízení
-            const hours = String(now.getHours()).padStart(2, '0'); // Zajistí, že 8 hodin bude "08"
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            return hours + ':' + minutes;
+            const now = new Date();
+            return String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
         }
 
-        // 3. Co se stane, když klikneme na zelené tlačítko (Příchod)
-        btnIn.addEventListener('click', function() {
-            const time = getCurrentTime();
-            statusMessage.innerText = 'Příchod zaznamenán v: ' + time;
-            statusMessage.style.color = 'green';
-        });
+        // Funkce pro získání dnešního data (formát pro databázi RRRR-MM-DD)
+        function getCurrentDate() {
+            const now = new Date();
+            return now.toISOString().split('T')[0]; 
+        }
 
-        // 4. Co se stane, když klikneme na červené tlačítko (Odchod)
-        btnOut.addEventListener('click', function() {
+        // Co se stane, když klikneme na zelené tlačítko (Příchod)
+        btnIn.addEventListener('click', async function() {
             const time = getCurrentTime();
-            statusMessage.innerText = 'Odchod zaznamenán v: ' + time;
-            statusMessage.style.color = 'red';
+            const date = getCurrentDate();
+            
+            // Uživateli ukážeme, že aplikace pracuje
+            statusMessage.innerText = 'Odesílám do databáze...';
+            statusMessage.style.color = 'black';
+
+            // Zápis nového řádku do tabulky 'attendance'
+            const { data, error } = await supabase
+                .from('attendance')
+                .insert([
+                    { date: date, time_in: time, type: 'Office' }
+                ]);
+
+            // Kontrola, jestli se to povedlo
+            if (error) {
+                statusMessage.innerText = 'Chyba: ' + error.message;
+                statusMessage.style.color = 'red';
+                console.error(error);
+            } else {
+                statusMessage.innerText = 'Příchod (' + time + ') úspěšně uložen do cloudu!';
+                statusMessage.style.color = 'green';
+            }
         });
     </script>
-
 </body>
 </html>
