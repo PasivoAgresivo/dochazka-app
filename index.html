@@ -3,124 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tracker Docházky</title>
+    <title>Moje Docházka</title>
     <style>
-        /* Zde je CSS - určuje, jak aplikace vypadá */
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 400px; /* Šířka pro mobilní telefon */
-            margin: 20px auto;
-            padding: 15px;
-            text-align: center;
-            background-color: #f9f9f9;
-        }
-        button {
-            padding: 15px 30px;
-            font-size: 16px;
-            margin: 10px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            width: 80%;
-            font-weight: bold;
-        }
-        .btn-in { 
-            background-color: #4CAF50; /* Zelená */
-            color: white; 
-        }
-        .btn-out { 
-            background-color: #f44336; /* Červená */
-            color: white; 
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            background-color: white;
-        }
-        th, td {
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-        }
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; background-color: #f4f4f9; }
+        .btn { padding: 15px 30px; font-size: 20px; color: white; border: none; border-radius: 8px; cursor: pointer; margin: 10px; width: 200px; }
+        .btn-in { background-color: #4CAF50; }
+        .btn-in:hover { background-color: #45a049; }
+        .btn-out { background-color: #f44336; }
+        .btn-out:hover { background-color: #da190b; }
     </style>
 </head>
 <body>
 
-    <h1>Moje Docházka</h1>
-    
-    <div>
-        <button class="btn-in">Zapsat příchod</button>
-        <button class="btn-out">Zapsat odchod</button>
-    </div>
+    <h1>Evidence Docházky</h1>
 
-    <hr style="margin: 30px 0;">
-
-    <h3>Historie (Test)</h3>
-    <table>
-        <tr>
-            <th>Datum</th>
-            <th>Příchod</th>
-            <th>Odchod</th>
-        </tr>
-        <tr>
-            <td>30. 6. 2026</td>
-            <td>08:00</td>
-            <td>--:--</td>
-        </tr>
-    </table>
+    <button class="btn btn-in">Zapsat příchod</button>
+    <button class="btn btn-out">Zapsat odchod</button>
 
     <p id="status-message" style="font-weight: bold; margin-top: 20px; font-size: 18px;"></p>
 
-    <script>
-        
-        <!-- Zde se bude zobrazovat zpráva o kliknutí -->
-    <p id="status-message" style="font-weight: bold; margin-top: 20px; font-size: 18px;"></p>
-
-    <!-- 1. Nahrajeme oficiální knihovnu Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <!-- 2. Náš upravený JavaScript (logika aplikace) -->
     <script>
-
-        // SEM VLOŽ SVOJE ÚDAJE (adresu bez /rest/v1/ a dlouhý klíč)
+        // ZDE DOPLŇ SVÉ KLÍČE (mezi apostrofy)
         const supabaseUrl = 'https://bnnblydnabmmekhuomem.supabase.co';
         const supabaseKey = 'sb_publishable_NRw5GoAEJphwZLSSMTtmWA_xb2ly6FK';
         
-        // Vytvoření připojení k databázi
         const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         const btnIn = document.querySelector('.btn-in');
+        const btnOut = document.querySelector('.btn-out');
         const statusMessage = document.getElementById('status-message');
 
-        // Funkce pro získání času (např. 08:15)
         function getCurrentTime() {
             const now = new Date();
             return String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
         }
 
-        // Funkce pro získání dnešního data (formát pro databázi RRRR-MM-DD)
         function getCurrentDate() {
             const now = new Date();
             return now.toISOString().split('T')[0]; 
         }
 
-        // Co se stane, když klikneme na zelené tlačítko (Příchod)
         btnIn.addEventListener('click', async function() {
             const time = getCurrentTime();
             const date = getCurrentDate();
             
-            // Uživateli ukážeme, že aplikace pracuje
             statusMessage.innerText = 'Odesílám do databáze...';
             statusMessage.style.color = 'black';
 
-            // Zápis nového řádku do tabulky 'attendance'
             const { data, error } = await supabase
                 .from('attendance')
                 .insert([
                     { date: date, time_in: time, type: 'Office' }
                 ]);
 
-            // Kontrola, jestli se to povedlo
             if (error) {
                 statusMessage.innerText = 'Chyba: ' + error.message;
                 statusMessage.style.color = 'red';
@@ -130,7 +67,14 @@
                 statusMessage.style.color = 'green';
             }
         });
+
+        btnOut.addEventListener('click', function() {
+            const time = getCurrentTime();
+            statusMessage.innerText = 'Odchod zatím nenapojen. Čas: ' + time;
+            statusMessage.style.color = 'orange';
+        });
     </script>
 </body>
+</html>
     
 </html>
