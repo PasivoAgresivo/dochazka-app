@@ -22,28 +22,62 @@
 
     <p id="status-message" style="font-weight: bold; margin-top: 20px; font-size: 18px;"></p>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <script>
+        // === ZDE DOPLŇ SVÉ ÚDAJE ZE SUPABASE ===
+        const supabaseUrl = 'https://bnnblydnabmmekhuomem.supabase.co';
+        const supabaseKey = 'sb_publishable_NRw5GoAEJphwZLSSMTtmWA_xb2ly6FK';
+        // ========================================
+        
+        // Vytvoření připojení k databázi
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
         const btnIn = document.querySelector('.btn-in');
         const btnOut = document.querySelector('.btn-out');
         const statusMessage = document.getElementById('status-message');
 
         function getCurrentTime() {
             const now = new Date();
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            return hours + ':' + minutes;
+            return String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
         }
 
-        btnIn.addEventListener('click', function() {
+        function getCurrentDate() {
+            const now = new Date();
+            // Formát pro databázi (RRRR-MM-DD)
+            return now.toISOString().split('T')[0]; 
+        }
+
+        btnIn.addEventListener('click', async function() {
             const time = getCurrentTime();
-            statusMessage.innerText = 'Příchod zaznamenán v: ' + time;
-            statusMessage.style.color = 'green';
+            const date = getCurrentDate();
+            
+            // Okamžitá zpětná vazba pro uživatele
+            statusMessage.innerText = 'Odesílám do databáze...';
+            statusMessage.style.color = 'black';
+
+            // Zápis do tabulky attendance
+            const { data, error } = await supabase
+                .from('attendance')
+                .insert([
+                    { date: date, time_in: time, type: 'Office' }
+                ]);
+
+            if (error) {
+                statusMessage.innerText = 'Chyba: ' + error.message;
+                statusMessage.style.color = 'red';
+                console.error(error);
+            } else {
+                statusMessage.innerText = 'Příchod (' + time + ') úspěšně uložen do cloudu!';
+                statusMessage.style.color = 'green';
+            }
         });
 
         btnOut.addEventListener('click', function() {
+            // Tlačítko odchodu zatím jen vypíše čas
             const time = getCurrentTime();
-            statusMessage.innerText = 'Odchod zaznamenán v: ' + time;
-            statusMessage.style.color = 'red';
+            statusMessage.innerText = 'Odchod zatím nenapojen. Čas: ' + time;
+            statusMessage.style.color = 'orange';
         });
     </script>
 </body>
