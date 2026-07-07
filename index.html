@@ -28,7 +28,6 @@
         const supabaseUrl = 'https://bnnblydnabmmekhuomem.supabase.co';
         const supabaseKey = 'sb_publishable_NRw5GoAEJphwZLSSMTtmWA_xb2ly6FK';
         
-        // OPRAVA: Přejmenovali jsme proměnnou na 'databaze', aby nevznikal konflikt
         const databaze = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         const btnIn = document.querySelector('.btn-in');
@@ -52,7 +51,6 @@
             statusMessage.innerText = 'Odesílám do databáze...';
             statusMessage.style.color = 'black';
 
-            // OPRAVA: Voláme 'databaze' místo 'supabase'
             const { data, error } = await databaze
                 .from('attendance')
                 .insert([
