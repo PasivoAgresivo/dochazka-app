@@ -381,7 +381,7 @@ $('btn-login').addEventListener('click', async () => {
   const email = $('login-email').value.trim();
   if (!email) return setMsg($('login-msg'), 'Zadej e-mail.', 'err');
   $('btn-login').disabled = true;
-  const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: location.origin + location.pathname } });
+  const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: location.origin + location.pathname, shouldCreateUser: false } });
   $('btn-login').disabled = false;
   if (error) setMsg($('login-msg'), 'Nepodařilo se odeslat: ' + error.message, 'err');
   else setMsg($('login-msg'), 'Odkaz je na cestě. Zkontroluj e-mail (i spam).', 'ok');
