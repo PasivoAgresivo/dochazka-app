@@ -1,77 +1,652 @@
 <!DOCTYPE html>
 <html lang="cs">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Moje Docházka</title>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; background-color: #f4f4f9; }
-        .btn { padding: 15px 30px; font-size: 20px; color: white; border: none; border-radius: 8px; cursor: pointer; margin: 10px; width: 200px; }
-        .btn-in { background-color: #4CAF50; }
-        .btn-in:hover { background-color: #45a049; }
-        .btn-out { background-color: #f44336; }
-        .btn-out:hover { background-color: #da190b; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Moje docházka</title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f4f4f1;
+    --surface: #fcfcfb;
+    --border: #e3e2dd;
+    --text: #0b0b0b;
+    --text-2: #52514e;
+    --muted: #8a8984;
+    --accent: #2a78d6;
+    --accent-ink: #ffffff;
+    --pos: #2a78d6;
+    --neg: #eb6834;
+    --weekend: #f0efea;
+    --missing: #fff4e5;
+    --danger: #c43b3a;
+    --ok: #0f7b3e;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      --bg: #121211;
+      --surface: #1a1a19;
+      --border: #2e2e2c;
+      --text: #f0efec;
+      --text-2: #c3c2b7;
+      --muted: #8f8e88;
+      --accent: #3987e5;
+      --pos: #3987e5;
+      --neg: #d95926;
+      --weekend: #222220;
+      --missing: #33291a;
+      --danger: #e66767;
+      --ok: #3fbf74;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); font-size: 15px; }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 20px; background: var(--surface); border-bottom: 1px solid var(--border); }
+  header h1 { font-size: 18px; margin: 0; }
+  header .who { color: var(--text-2); font-size: 13px; display: flex; gap: 10px; align-items: center; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  nav.tabs { display: flex; gap: 6px; margin-bottom: 18px; }
+  nav.tabs button { background: transparent; border: 1px solid var(--border); color: var(--text-2); padding: 8px 16px; border-radius: 999px; cursor: pointer; font-size: 14px; }
+  nav.tabs button.active { background: var(--text); color: var(--surface); border-color: var(--text); }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin-bottom: 16px; }
+  .card h2 { font-size: 15px; margin: 0 0 12px; color: var(--text-2); font-weight: 600; }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+  .kpi .label { font-size: 12px; color: var(--text-2); text-transform: uppercase; letter-spacing: .04em; }
+  .kpi .value { font-size: 26px; font-weight: 650; margin-top: 4px; font-variant-numeric: tabular-nums; }
+  .kpi .sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .btn { border: 1px solid var(--border); background: var(--surface); color: var(--text); padding: 9px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; }
+  .btn:hover { border-color: var(--text-2); }
+  .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .btn.big { font-size: 18px; padding: 16px 28px; min-width: 190px; border-radius: 10px; }
+  .btn.danger { color: var(--danger); border-color: var(--danger); }
+  .btn.small { padding: 5px 10px; font-size: 13px; }
+  .btn:disabled { opacity: .45; cursor: default; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .today-status { font-size: 16px; margin: 6px 0 16px; color: var(--text-2); }
+  .today-status b { color: var(--text); }
+  .msg { min-height: 20px; margin-top: 10px; font-size: 14px; }
+  .msg.err { color: var(--danger); }
+  .msg.ok { color: var(--ok); }
+  select, input { font: inherit; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--border); font-size: 14px; }
+  th { color: var(--text-2); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .03em; }
+  td.num, th.num { text-align: right; }
+  tr.weekend td { background: var(--weekend); }
+  tr.missing td { background: var(--missing); }
+  tr.week td { font-weight: 600; color: var(--text-2); border-bottom: 2px solid var(--border); }
+  tr.clickable { cursor: pointer; }
+  tr.clickable:hover td { outline: 1px solid var(--border); }
+  .tag { display: inline-block; font-size: 12px; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--border); color: var(--text-2); }
+  .table-wrap { overflow-x: auto; }
+  .month-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+  .month-head h2 { margin: 0; font-size: 18px; color: var(--text); text-transform: capitalize; }
+  .chart-box { position: relative; height: 300px; }
+  .legend { display: flex; gap: 16px; font-size: 13px; color: var(--text-2); margin-bottom: 8px; flex-wrap: wrap; }
+  .legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  .legend i.line { height: 2px; border-radius: 0; vertical-align: 3px; }
+  dialog { border: 1px solid var(--border); border-radius: 12px; background: var(--surface); color: var(--text); padding: 20px; width: min(440px, 92vw); }
+  dialog::backdrop { background: rgba(0,0,0,.35); }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 12px; }
+  .form-grid label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--text-2); }
+  .form-grid .full { grid-column: 1 / -1; }
+  .login { max-width: 420px; margin: 60px auto; }
+  .hint { color: var(--muted); font-size: 13px; }
+  .hidden { display: none !important; }
+  .pos { color: var(--pos); }
+  .neg { color: var(--neg); }
+</style>
 </head>
 <body>
 
-    <h1>Evidence Docházky</h1>
+<header>
+  <h1>Moje docházka</h1>
+  <div class="who hidden" id="who"><span id="who-email"></span><button class="btn small" id="btn-logout">Odhlásit</button></div>
+</header>
 
-    <button class="btn btn-in">Zapsat příchod</button>
-    <button class="btn btn-out">Zapsat odchod</button>
+<main>
+  <!-- Přihlášení -->
+  <section id="view-login" class="card login hidden">
+    <h2>Přihlášení</h2>
+    <p class="hint">Zadej svůj e-mail. Pošlu ti odkaz, po kliknutí na něj budeš přihlášený.</p>
+    <div class="row">
+      <input type="email" id="login-email" placeholder="tvuj@email.cz" style="flex:1; min-width:220px">
+      <button class="btn primary" id="btn-login">Poslat odkaz</button>
+    </div>
+    <div class="msg" id="login-msg"></div>
+  </section>
 
-    <p id="status-message" style="font-weight: bold; margin-top: 20px; font-size: 18px;"></p>
+  <section id="view-noaccess" class="card login hidden">
+    <h2>Bez přístupu</h2>
+    <p>Tento účet nemá přístup k docházce.</p>
+  </section>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Aplikace -->
+  <div id="view-app" class="hidden">
+    <nav class="tabs">
+      <button data-tab="today" class="active">Dnes</button>
+      <button data-tab="month">Měsíc</button>
+      <button data-tab="overview">Přehled</button>
+    </nav>
 
-    <script>
-        const supabaseUrl = 'https://bnnblydnabmmekhuomem.supabase.co';
-        const supabaseKey = 'sb_publishable_NRw5GoAEJphwZLSSMTtmWA_xb2ly6FK';
-        
-        const databaze = window.supabase.createClient(supabaseUrl, supabaseKey);
+    <!-- DNES -->
+    <section id="tab-today">
+      <div class="card">
+        <h2 id="today-title">Dnes</h2>
+        <div class="today-status" id="today-status">Načítám…</div>
+        <div class="row" style="margin-bottom:14px">
+          <label class="hint">Kde pracuji:</label>
+          <select id="today-type">
+            <option value="KANC">Kancelář</option>
+            <option value="HO">Home office</option>
+          </select>
+        </div>
+        <div class="row">
+          <button class="btn big primary" id="btn-in">Zapsat příchod</button>
+          <button class="btn big" id="btn-out">Zapsat odchod</button>
+        </div>
+        <div class="row" style="margin-top:14px">
+          <span class="hint">Celý den:</span>
+          <button class="btn small" data-quick="DOV">Dovolená</button>
+          <button class="btn small" data-quick="SV">Svátek</button>
+          <button class="btn small" data-quick="NEM">Nemoc</button>
+          <button class="btn small" id="btn-today-edit">Upravit ručně…</button>
+        </div>
+        <div class="msg" id="today-msg"></div>
+      </div>
+      <div class="kpis" id="today-kpis"></div>
+    </section>
 
-        const btnIn = document.querySelector('.btn-in');
-        const btnOut = document.querySelector('.btn-out');
-        const statusMessage = document.getElementById('status-message');
+    <!-- MĚSÍC -->
+    <section id="tab-month" class="hidden">
+      <div class="card">
+        <div class="month-head">
+          <div class="row">
+            <button class="btn small" id="m-prev">◀</button>
+            <h2 id="m-title"></h2>
+            <button class="btn small" id="m-next">▶</button>
+          </div>
+          <div class="row">
+            <input type="month" id="m-pick">
+            <button class="btn small primary" id="m-add">+ Přidat den</button>
+          </div>
+        </div>
+        <div class="kpis" id="m-kpis"></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Datum</th><th>Typ</th><th>Příchod</th><th>Odchod</th>
+              <th class="num">Přestávka</th><th class="num">Odpracováno</th><th>Poznámka</th>
+            </tr></thead>
+            <tbody id="m-body"></tbody>
+          </table>
+        </div>
+        <p class="hint">Klikni na řádek a záznam upravíš. Oranžově jsou pracovní dny bez záznamu.</p>
+      </div>
+    </section>
 
-        function getCurrentTime() {
-            const now = new Date();
-            return String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
-        }
+    <!-- PŘEHLED -->
+    <section id="tab-overview" class="hidden">
+      <div class="kpis" id="o-kpis"></div>
+      <div class="card">
+        <div class="month-head">
+          <h2>Rok</h2>
+          <select id="o-year"></select>
+        </div>
+        <h2>Odpracované hodiny a fond po měsících</h2>
+        <div class="legend"><span><i style="background:var(--pos)"></i>Odpracováno</span><span><i class="line" style="background:var(--text-2)"></i>Fond</span></div>
+        <div class="chart-box"><canvas id="ch-hours"></canvas></div>
+      </div>
+      <div class="card">
+        <h2>Přesčas po měsících</h2>
+        <div class="legend"><span><i style="background:var(--pos)"></i>Přesčas</span><span><i style="background:var(--neg)"></i>Pod fondem</span><span><i class="line" style="background:var(--text-2)"></i>Kumulativně za rok</span></div>
+        <div class="chart-box"><canvas id="ch-ot"></canvas></div>
+      </div>
+      <div class="card">
+        <h2>Souhrn po letech</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Rok</th><th class="num">Dní</th><th class="num">Odpracováno</th><th class="num">Fond</th><th class="num">Přesčas za rok</th><th class="num">Přesčas celkem</th></tr></thead>
+            <tbody id="o-years"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
 
-        function getCurrentDate() {
-            const now = new Date();
-            return now.toISOString().split('T')[0]; 
-        }
+<!-- Dialog pro úpravu záznamu -->
+<dialog id="dlg">
+  <form id="dlg-form" method="dialog">
+    <h2 style="margin:0 0 14px; font-size:17px" id="dlg-title">Záznam</h2>
+    <div class="form-grid">
+      <label class="full">Datum <input type="date" id="f-date" required></label>
+      <label class="full">Typ dne
+        <select id="f-type">
+          <option value="KANC">Kancelář</option>
+          <option value="HO">Home office</option>
+          <option value="DOV">Dovolená</option>
+          <option value="SV">Svátek</option>
+          <option value="NEM">Nemoc</option>
+          <option value="LEK">Lékař</option>
+        </select>
+      </label>
+      <label>Příchod <input type="time" id="f-in"></label>
+      <label>Odchod <input type="time" id="f-out"></label>
+      <label>Přestávka (min) <input type="number" id="f-break" min="0" step="5" value="30"></label>
+      <label>Ruční úprava (min, ±) <input type="number" id="f-adj" step="5" value="0"></label>
+      <label class="full">Poznámka <input type="text" id="f-note"></label>
+    </div>
+    <p class="hint" id="f-hint">Dovolená, svátek a nemoc bez časů se počítají jako 8 hodin.</p>
+    <div class="row" style="justify-content:space-between; margin-top:10px">
+      <button type="button" class="btn danger" id="f-del">Smazat</button>
+      <div class="row">
+        <button type="button" class="btn" id="f-cancel">Zrušit</button>
+        <button type="submit" class="btn primary" id="f-save">Uložit</button>
+      </div>
+    </div>
+    <div class="msg err" id="f-msg"></div>
+  </form>
+</dialog>
 
-        btnIn.addEventListener('click', async function() {
-            const time = getCurrentTime();
-            const date = getCurrentDate();
-            
-            statusMessage.innerText = 'Odesílám do databáze...';
-            statusMessage.style.color = 'black';
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+// ---------- Nastavení ----------
+const SUPABASE_URL = 'https://bnnblydnabmmekhuomem.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_NRw5GoAEJphwZLSSMTtmWA_xb2ly6FK'; // veřejný klíč, data chrání pravidla v databázi
+const DAY_FUND_MIN = 8 * 60;      // denní fond
+const DEFAULT_BREAK = 30;         // výchozí přestávka
+const TYPES = { KANC: 'Kancelář', HO: 'Home office', DOV: 'Dovolená', SV: 'Svátek', NEM: 'Nemoc', LEK: 'Lékař' };
+const PAID_FULL_DAY = ['DOV', 'SV', 'NEM'];
+const MONTHS = ['leden','únor','březen','duben','květen','červen','červenec','srpen','září','říjen','listopad','prosinec'];
+const MONTHS_SHORT = ['led','úno','bře','dub','kvě','čvn','čvc','srp','zář','říj','lis','pro'];
+const WD = ['ne','po','út','st','čt','pá','so'];
 
-            const { data, error } = await databaze
-                .from('attendance')
-                .insert([
-                    { date: date, time_in: time, type: 'Office' }
-                ]);
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const $ = id => document.getElementById(id);
 
-            if (error) {
-                statusMessage.innerText = 'Chyba: ' + error.message;
-                statusMessage.style.color = 'red';
-                console.error(error);
-            } else {
-                statusMessage.innerText = 'Příchod (' + time + ') úspěšně uložen do cloudu!';
-                statusMessage.style.color = 'green';
-            }
-        });
+let user = null;
+let rows = [];            // všechny záznamy
+let byDate = new Map();   // 'YYYY-MM-DD' -> záznam
+let curMonth = null;      // {y, m} (m = 0..11)
+let charts = {};
 
-        btnOut.addEventListener('click', function() {
-            const time = getCurrentTime();
-            statusMessage.innerText = 'Odchod zatím nenapojen. Čas: ' + time;
-            statusMessage.style.color = 'orange';
-        });
-    </script>
+// ---------- Pomocné funkce ----------
+const pad = n => String(n).padStart(2, '0');
+const isoDate = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; // místní datum, ne UTC
+const parseDate = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+const nowTime = () => { const n = new Date(); return `${pad(n.getHours())}:${pad(n.getMinutes())}`; };
+const hhmm = t => t ? t.slice(0, 5) : '';
+function fmtMin(min, signed = false) {
+  const sign = min < 0 ? '−' : (signed && min > 0 ? '+' : '');
+  const a = Math.abs(Math.round(min));
+  return `${sign}${Math.floor(a / 60)}:${pad(a % 60)}`;
+}
+const fmtH = min => (min / 60).toLocaleString('cs-CZ', { maximumFractionDigits: 1 });
+const isWeekday = d => d.getDay() >= 1 && d.getDay() <= 5;
+function setMsg(el, text, kind) { el.textContent = text || ''; el.className = 'msg' + (kind ? ' ' + kind : ''); }
+
+function workedMinutes(r) {
+  if (r.time_in && r.time_out) {
+    const [h1, m1] = r.time_in.split(':').map(Number), [h2, m2] = r.time_out.split(':').map(Number);
+    let m = (h2 * 60 + m2) - (h1 * 60 + m1);
+    if (m < 0) m += 1440; // přes půlnoc
+    return m - (r.break_minutes || 0) + (r.adjustment_minutes || 0);
+  }
+  if (PAID_FULL_DAY.includes(r.type)) return DAY_FUND_MIN + (r.adjustment_minutes || 0);
+  return 0;
+}
+
+// Fond se počítá od prvního záznamu do včerejška; dnešek až po dokončení dne.
+function fundEnd() {
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const r = byDate.get(isoDate(today));
+  const done = r && (r.time_out || (PAID_FULL_DAY.includes(r.type) && !r.time_in));
+  if (!done) today.setDate(today.getDate() - 1);
+  return today;
+}
+function firstDate() { return rows.length ? parseDate(rows[0].date) : new Date(); }
+
+function fundBetween(from, to) {
+  const start = new Date(Math.max(from, firstDate())), end = new Date(Math.min(to, fundEnd()));
+  let n = 0;
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) if (isWeekday(d)) n++;
+  return n * DAY_FUND_MIN;
+}
+function fullMonthFund(y, m) {
+  let n = 0; const last = new Date(y, m + 1, 0).getDate();
+  for (let i = 1; i <= last; i++) if (isWeekday(new Date(y, m, i))) n++;
+  return n * DAY_FUND_MIN;
+}
+function workedBetween(from, to) {
+  const a = isoDate(from), b = isoDate(to);
+  let s = 0;
+  for (const r of rows) if (r.date >= a && r.date <= b) s += workedMinutes(r);
+  return s;
+}
+function periodStats(from, to) {
+  const worked = workedBetween(from, to), fund = fundBetween(from, to);
+  return { worked, fund, ot: worked - fund };
+}
+const yearRange = y => [new Date(y, 0, 1), new Date(y, 11, 31)];
+const monthRange = (y, m) => [new Date(y, m, 1), new Date(y, m + 1, 0)];
+
+// ---------- Data ----------
+async function loadRows() {
+  const all = []; const page = 1000;
+  for (let from = 0; ; from += page) {
+    const { data, error } = await sb.from('attendance')
+      .select('id,date,time_in,time_out,break_minutes,adjustment_minutes,type,note')
+      .order('date', { ascending: true }).range(from, from + page - 1);
+    if (error) throw error;
+    all.push(...data);
+    if (data.length < page) break;
+  }
+  rows = all;
+  byDate = new Map(rows.map(r => [r.date, r]));
+}
+
+async function saveRow(rec, id) {
+  const payload = { ...rec, user_id: user.id };
+  const q = id ? sb.from('attendance').update(payload).eq('id', id)
+               : sb.from('attendance').insert(payload);
+  const { error } = await q;
+  if (error) {
+    if (error.code === '23505') throw new Error('Pro tento den už záznam existuje.');
+    throw error;
+  }
+  await loadRows();
+  renderAll();
+}
+
+// ---------- Přihlášení ----------
+async function onSession(session) {
+  user = session ? session.user : null;
+  ['view-login', 'view-noaccess', 'view-app'].forEach(v => $(v).classList.add('hidden'));
+  $('who').classList.toggle('hidden', !user);
+  if (!user) { $('view-login').classList.remove('hidden'); return; }
+  $('who-email').textContent = user.email;
+  const { data: isOwner, error } = await sb.rpc('claim_ownership');
+  if (error || !isOwner) { $('view-noaccess').classList.remove('hidden'); return; }
+  $('view-app').classList.remove('hidden');
+  try { await loadRows(); } catch (e) { setMsg($('today-msg'), 'Chyba při načítání: ' + e.message, 'err'); }
+  const t = new Date(); curMonth = { y: t.getFullYear(), m: t.getMonth() };
+  renderAll();
+}
+
+$('btn-login').addEventListener('click', async () => {
+  const email = $('login-email').value.trim();
+  if (!email) return setMsg($('login-msg'), 'Zadej e-mail.', 'err');
+  $('btn-login').disabled = true;
+  const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: location.origin + location.pathname } });
+  $('btn-login').disabled = false;
+  if (error) setMsg($('login-msg'), 'Nepodařilo se odeslat: ' + error.message, 'err');
+  else setMsg($('login-msg'), 'Odkaz je na cestě. Zkontroluj e-mail (i spam).', 'ok');
+});
+$('btn-logout').addEventListener('click', () => sb.auth.signOut());
+
+let lastUserId = undefined;
+sb.auth.onAuthStateChange((_event, session) => {
+  const uid = session ? session.user.id : null;
+  if (uid === lastUserId) return; // obnova tokenu nic nemění
+  lastUserId = uid;
+  setTimeout(() => onSession(session), 0);
+});
+
+// ---------- Záložky ----------
+document.querySelectorAll('nav.tabs button').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('nav.tabs button').forEach(x => x.classList.toggle('active', x === b));
+  ['today', 'month', 'overview'].forEach(t => $('tab-' + t).classList.toggle('hidden', t !== b.dataset.tab));
+  if (b.dataset.tab === 'overview') renderOverview();
+}));
+
+function renderAll() {
+  renderToday();
+  renderMonth();
+  if (!$('tab-overview').classList.contains('hidden')) renderOverview();
+}
+
+function kpiHtml(label, min, sub, signed = false) {
+  const cls = signed ? (min > 0 ? 'pos' : min < 0 ? 'neg' : '') : '';
+  return `<div class="kpi"><div class="label">${label}</div><div class="value ${cls}">${fmtMin(min, signed)}</div>${sub ? `<div class="sub">${sub}</div>` : ''}</div>`;
+}
+
+// ---------- DNES ----------
+function renderToday() {
+  const t = new Date(), key = isoDate(t), r = byDate.get(key);
+  $('today-title').textContent = `Dnes – ${WD[t.getDay()]} ${t.getDate()}. ${t.getMonth() + 1}. ${t.getFullYear()}`;
+  let s;
+  if (!r) s = 'Zatím bez záznamu.';
+  else if (r.time_in && !r.time_out) s = `Příchod v <b>${hhmm(r.time_in)}</b> (${TYPES[r.type]}). Nezapomeň zapsat odchod.`;
+  else if (r.time_in && r.time_out) s = `Příchod <b>${hhmm(r.time_in)}</b>, odchod <b>${hhmm(r.time_out)}</b> – odpracováno <b>${fmtMin(workedMinutes(r))}</b> (${TYPES[r.type]}).`;
+  else s = `<b>${TYPES[r.type]}</b> – počítá se ${fmtMin(workedMinutes(r))}.`;
+  $('today-status').innerHTML = s;
+  if (r && (r.type === 'KANC' || r.type === 'HO')) $('today-type').value = r.type;
+  $('btn-in').disabled = !!(r && r.time_in);
+  $('btn-out').disabled = !(r && r.time_in);
+
+  const [ms, me] = monthRange(t.getFullYear(), t.getMonth());
+  const m = periodStats(ms, me), y = periodStats(...yearRange(t.getFullYear()));
+  const all = periodStats(firstDate(), new Date(2100, 0, 1));
+  $('today-kpis').innerHTML =
+    kpiHtml('Tento měsíc odpracováno', m.worked, `fond k dnešku ${fmtMin(m.fund)} z ${fmtMin(fullMonthFund(t.getFullYear(), t.getMonth()))}`) +
+    kpiHtml('Přesčas tento měsíc', m.ot, 'proti fondu k dnešku', true) +
+    kpiHtml(`Přesčas ${t.getFullYear()}`, y.ot, 'roční fond přesčasů', true) +
+    kpiHtml('Přesčas celkem', all.ot, `od ${firstDate().toLocaleDateString('cs-CZ')}`, true);
+}
+
+$('btn-in').addEventListener('click', async () => {
+  const key = isoDate(new Date()), r = byDate.get(key), time = nowTime();
+  try {
+    setMsg($('today-msg'), 'Ukládám…');
+    if (r) await saveRow({ time_in: time, type: $('today-type').value }, r.id);
+    else await saveRow({ date: key, time_in: time, type: $('today-type').value, break_minutes: DEFAULT_BREAK });
+    setMsg($('today-msg'), `Příchod ${time} uložen.`, 'ok');
+  } catch (e) { setMsg($('today-msg'), 'Chyba: ' + e.message, 'err'); }
+});
+$('btn-out').addEventListener('click', async () => {
+  const r = byDate.get(isoDate(new Date())), time = nowTime();
+  if (!r) return;
+  try {
+    setMsg($('today-msg'), 'Ukládám…');
+    await saveRow({ time_out: time, type: $('today-type').value }, r.id);
+    setMsg($('today-msg'), `Odchod ${time} uložen.`, 'ok');
+  } catch (e) { setMsg($('today-msg'), 'Chyba: ' + e.message, 'err'); }
+});
+document.querySelectorAll('[data-quick]').forEach(b => b.addEventListener('click', async () => {
+  const key = isoDate(new Date()), r = byDate.get(key), type = b.dataset.quick;
+  try {
+    const rec = { date: key, type, time_in: null, time_out: null, break_minutes: 0 };
+    await saveRow(rec, r ? r.id : null);
+    setMsg($('today-msg'), `Dnešek zapsán jako ${TYPES[type].toLowerCase()} (8 h).`, 'ok');
+  } catch (e) { setMsg($('today-msg'), 'Chyba: ' + e.message, 'err'); }
+}));
+$('btn-today-edit').addEventListener('click', () => openDialog(isoDate(new Date())));
+$('today-type').addEventListener('change', async () => {
+  const r = byDate.get(isoDate(new Date()));
+  if (r && (r.type === 'KANC' || r.type === 'HO') && r.type !== $('today-type').value) {
+    try { await saveRow({ type: $('today-type').value }, r.id); } catch (e) { setMsg($('today-msg'), 'Chyba: ' + e.message, 'err'); }
+  }
+});
+
+// ---------- MĚSÍC ----------
+function renderMonth() {
+  if (!curMonth) return;
+  const { y, m } = curMonth;
+  $('m-title').textContent = `${MONTHS[m]} ${y}`;
+  $('m-pick').value = `${y}-${pad(m + 1)}`;
+  const [ms, me] = monthRange(y, m);
+  const st = periodStats(ms, me);
+  const ytd = periodStats(new Date(y, 0, 1), me);
+  const all = periodStats(firstDate(), me);
+  $('m-kpis').innerHTML =
+    kpiHtml('Odpracováno', st.worked) +
+    kpiHtml('Fond', st.fund, st.fund !== fullMonthFund(y, m) ? `k dnešku, celý měsíc ${fmtMin(fullMonthFund(y, m))}` : 'celý měsíc') +
+    kpiHtml('Přesčas za měsíc', st.ot, '', true) +
+    kpiHtml(`Přesčas ${y} od ledna`, ytd.ot, `včetně měsíce ${MONTHS[m]}`, true) +
+    kpiHtml('Přesčas celkem', all.ot, 'za celou historii', true);
+
+  const fEnd = fundEnd(), first = firstDate();
+  let html = '', week = 0, weekRows = 0;
+  const last = me.getDate();
+  for (let i = 1; i <= last; i++) {
+    const d = new Date(y, m, i), key = isoDate(d), r = byDate.get(key);
+    const wkend = !isWeekday(d);
+    const missing = !r && !wkend && d <= fEnd && d >= first;
+    const w = r ? workedMinutes(r) : 0; week += w;
+    if (r || !wkend) {
+      weekRows++;
+      html += `<tr class="clickable ${wkend ? 'weekend' : ''} ${missing ? 'missing' : ''}" data-date="${key}">
+        <td>${WD[d.getDay()]} ${i}. ${m + 1}.</td>
+        <td>${r ? `<span class="tag">${TYPES[r.type]}</span>` : (missing ? '<span class="hint">chybí záznam</span>' : '')}</td>
+        <td>${r ? hhmm(r.time_in) : ''}</td><td>${r ? hhmm(r.time_out) : ''}</td>
+        <td class="num">${r && r.time_in ? r.break_minutes + ' min' : ''}</td>
+        <td class="num">${r ? fmtMin(w) : ''}${r && r.adjustment_minutes ? ` <span class="hint">(${fmtMin(r.adjustment_minutes, true)})</span>` : ''}</td>
+        <td>${r && r.note ? escapeHtml(r.note) : ''}</td></tr>`;
+    }
+    if ((d.getDay() === 0 || i === last) && weekRows) {
+      html += `<tr class="week"><td colspan="5">Týden celkem</td><td class="num">${fmtMin(week)}</td><td></td></tr>`;
+    }
+    if (d.getDay() === 0 || i === last) { week = 0; weekRows = 0; }
+  }
+  $('m-body').innerHTML = html;
+  $('m-body').querySelectorAll('tr.clickable').forEach(tr => tr.addEventListener('click', () => openDialog(tr.dataset.date)));
+}
+function escapeHtml(s) { return s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function shiftMonth(k) { const d = new Date(curMonth.y, curMonth.m + k, 1); curMonth = { y: d.getFullYear(), m: d.getMonth() }; renderMonth(); }
+$('m-prev').addEventListener('click', () => shiftMonth(-1));
+$('m-next').addEventListener('click', () => shiftMonth(1));
+$('m-pick').addEventListener('change', e => { if (!e.target.value) return; const [y, m] = e.target.value.split('-').map(Number); curMonth = { y, m: m - 1 }; renderMonth(); });
+$('m-add').addEventListener('click', () => {
+  const t = new Date();
+  const def = (curMonth.y === t.getFullYear() && curMonth.m === t.getMonth()) ? isoDate(t) : isoDate(new Date(curMonth.y, curMonth.m, 1));
+  openDialog(def, true);
+});
+
+// ---------- Dialog ----------
+let editId = null, delArmed = false;
+function openDialog(dateKey, forceNew = false) {
+  const r = forceNew ? null : byDate.get(dateKey);
+  editId = r ? r.id : null; delArmed = false;
+  $('dlg-title').textContent = r ? 'Upravit záznam' : 'Nový záznam';
+  $('f-date').value = dateKey;
+  $('f-type').value = r ? r.type : 'KANC';
+  $('f-in').value = r ? hhmm(r.time_in) : '';
+  $('f-out').value = r ? hhmm(r.time_out) : '';
+  $('f-break').value = r ? r.break_minutes : DEFAULT_BREAK;
+  $('f-adj').value = r ? r.adjustment_minutes : 0;
+  $('f-note').value = r && r.note ? r.note : '';
+  $('f-del').classList.toggle('hidden', !r);
+  $('f-del').textContent = 'Smazat';
+  setMsg($('f-msg'), '', 'err');
+  $('dlg').showModal();
+}
+$('f-cancel').addEventListener('click', () => $('dlg').close());
+$('dlg-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const date = $('f-date').value;
+  if (!date) return setMsg($('f-msg'), 'Vyplň datum.', 'err');
+  const existing = byDate.get(date);
+  if (existing && existing.id !== editId) return setMsg($('f-msg'), 'Pro tento den už záznam existuje – otevři ho v tabulce.', 'err');
+  const tin = $('f-in').value || null, tout = $('f-out').value || null;
+  if (tout && !tin) return setMsg($('f-msg'), 'Odchod bez příchodu nejde uložit.', 'err');
+  const rec = {
+    date, type: $('f-type').value, time_in: tin, time_out: tout,
+    break_minutes: parseInt($('f-break').value || '0', 10),
+    adjustment_minutes: parseInt($('f-adj').value || '0', 10),
+    note: $('f-note').value.trim() || null,
+  };
+  try { $('f-save').disabled = true; await saveRow(rec, editId); $('dlg').close(); }
+  catch (err) { setMsg($('f-msg'), 'Chyba: ' + err.message, 'err'); }
+  finally { $('f-save').disabled = false; }
+});
+$('f-del').addEventListener('click', async () => {
+  if (!delArmed) { delArmed = true; $('f-del').textContent = 'Opravdu smazat?'; return; }
+  const { error } = await sb.from('attendance').delete().eq('id', editId);
+  if (error) return setMsg($('f-msg'), 'Chyba: ' + error.message, 'err');
+  await loadRows(); renderAll(); $('dlg').close();
+});
+
+// ---------- PŘEHLED ----------
+function years() {
+  const s = new Set(rows.map(r => +r.date.slice(0, 4)));
+  s.add(new Date().getFullYear());
+  return [...s].sort((a, b) => a - b);
+}
+function cssVar(n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+
+function renderOverview() {
+  const ys = years(), sel = $('o-year');
+  if (!sel.options.length) {
+    sel.innerHTML = ys.map(y => `<option>${y}</option>`).join('');
+    sel.value = new Date().getFullYear();
+    sel.addEventListener('change', renderOverview);
+  }
+  const Y = +sel.value;
+
+  // Souhrn po letech
+  let cum = 0, html = '';
+  const allStats = [];
+  for (const y of ys) {
+    const s = periodStats(...yearRange(y)); cum += s.ot;
+    const days = rows.filter(r => r.date.startsWith(y + '-')).length;
+    allStats.push(s);
+    html += `<tr><td>${y}</td><td class="num">${days}</td><td class="num">${fmtMin(s.worked)}</td><td class="num">${fmtMin(s.fund)}</td>
+      <td class="num ${s.ot > 0 ? 'pos' : s.ot < 0 ? 'neg' : ''}">${fmtMin(s.ot, true)}</td><td class="num">${fmtMin(cum, true)}</td></tr>`;
+  }
+  $('o-years').innerHTML = html;
+
+  const ySt = periodStats(...yearRange(Y));
+  const total = periodStats(firstDate(), new Date(2100, 0, 1));
+  $('o-kpis').innerHTML =
+    kpiHtml(`Odpracováno ${Y}`, ySt.worked, `${fmtH(ySt.worked)} h`) +
+    kpiHtml(`Fond ${Y}`, ySt.fund) +
+    kpiHtml(`Přesčas ${Y}`, ySt.ot, 'roční fond přesčasů', true) +
+    kpiHtml('Přesčas celkem', total.ot, `za celou historii od ${firstDate().toLocaleDateString('cs-CZ')}`, true);
+
+  // Data po měsících
+  const labels = [], worked = [], fund = [], ot = [], cumY = []; let c = 0;
+  for (let m = 0; m < 12; m++) {
+    const [a, b] = monthRange(Y, m);
+    const s = periodStats(a, b);
+    if (s.worked === 0 && s.fund === 0) { labels.push(MONTHS_SHORT[m]); worked.push(null); fund.push(null); ot.push(null); cumY.push(null); continue; }
+    c += s.ot;
+    labels.push(MONTHS_SHORT[m]); worked.push(+(s.worked / 60).toFixed(2)); fund.push(+(s.fund / 60).toFixed(2));
+    ot.push(+(s.ot / 60).toFixed(2)); cumY.push(+(c / 60).toFixed(2));
+  }
+  const pos = cssVar('--pos'), neg = cssVar('--neg'), ink2 = cssVar('--text-2'), grid = cssVar('--border'), muted = cssVar('--muted'), surface = cssVar('--surface');
+  const hFmt = v => v == null ? '–' : `${v.toLocaleString('cs-CZ', { maximumFractionDigits: 1 })} h`;
+  const base = {
+    responsive: true, maintainAspectRatio: false, animation: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${hFmt(ctx.parsed.y)}` } } },
+    scales: {
+      x: { grid: { display: false }, ticks: { color: muted } },
+      y: { grid: { color: grid }, border: { display: false }, ticks: { color: muted, callback: v => v + ' h' } },
+    },
+  };
+  Object.values(charts).forEach(ch => ch.destroy());
+  charts.hours = new Chart($('ch-hours'), {
+    data: { labels, datasets: [
+      { type: 'bar', label: 'Odpracováno', data: worked, backgroundColor: pos, borderRadius: 4, borderSkipped: 'start', maxBarThickness: 36, order: 2 },
+      { type: 'line', label: 'Fond', data: fund, borderColor: ink2, borderWidth: 2, pointRadius: 3, pointBackgroundColor: ink2, stepped: false, order: 1 },
+    ] },
+    options: { ...base, scales: { ...base.scales, y: { ...base.scales.y, beginAtZero: true } } },
+  });
+  charts.ot = new Chart($('ch-ot'), {
+    data: { labels, datasets: [
+      { type: 'bar', label: 'Přesčas', data: ot, backgroundColor: ot.map(v => v < 0 ? neg : pos), borderRadius: 4, borderSkipped: 'start', maxBarThickness: 36, order: 2 },
+      { type: 'line', label: 'Kumulativně za rok', data: cumY, borderColor: ink2, borderWidth: 2, pointRadius: 3, pointBackgroundColor: ink2, pointBorderColor: surface, order: 1 },
+    ] },
+    options: base,
+  });
+}
+
+// Start
+sb.auth.getSession().then(({ data }) => { if (lastUserId === undefined) { lastUserId = data.session ? data.session.user.id : null; onSession(data.session); } });
+</script>
 </body>
 </html>
